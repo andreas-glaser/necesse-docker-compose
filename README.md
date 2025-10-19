@@ -29,13 +29,7 @@ Containerised Necesse dedicated server ready for GitHub distribution. It builds 
 
 ## Downloading Without Git
 
-If you do not have Git installed, you can either download a release archive from the GitHub Releases page or build one locally:
-
-```bash
-make package
-```
-
-The command above creates `dist/necesse-docker-compose-<version>.tar.gz` containing all required files. Extract it anywhere and continue with the Quickstart from step 2.
+Download the latest release `.tar.gz` or `.zip` from the [GitHub Releases](https://github.com/andreas-glaser/necesse-docker-compose/releases) page. Extract it and continue with the Quickstart from step 2.
 
 ## Environment Variables
 
@@ -105,6 +99,13 @@ Logs remain under `./data/logs`. Tail them with `docker compose logs -f necesse`
 ## Continuous Integration
 
 GitHub Actions (`.github/workflows/ci.yml`) runs shellcheck on `entrypoint.sh` and builds the Docker image for every push and pull request.
+
+## Release Process
+
+1. Update [`CHANGELOG.md`](CHANGELOG.md) with the upcoming version and date.
+2. Commit the changes to `main` (or merge from your working branch).
+3. Tag the commit (e.g. `git tag -a v0.1.0 -m "v0.1.0"`).
+4. Push the tag (`git push origin v0.1.0`). The release workflow attaches `.tar.gz` and `.zip` archives to the GitHub release automatically.
 
 ## Reference
 

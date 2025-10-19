@@ -9,6 +9,3 @@ data/
 
 # Docker volumes
 *.log
-
-# Release artifacts
-dist/

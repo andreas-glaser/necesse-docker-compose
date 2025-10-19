@@ -1,0 +1,32 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create release archives
+        run: |
+          set -euo pipefail
+          release_name="necesse-docker-compose-${GITHUB_REF_NAME}"
+          mkdir "${release_name}"
+          cp Dockerfile docker-compose.yml entrypoint.sh README.md LICENSE .env.example CHANGELOG.md "${release_name}/"
+          cp -r .github "${release_name}/.github"
+          tar -czf "${release_name}.tar.gz" "${release_name}"
+          zip -r "${release_name}.zip" "${release_name}"
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            necesse-docker-compose-${{ github.ref_name }}.tar.gz
+            necesse-docker-compose-${{ github.ref_name }}.zip
