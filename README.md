@@ -11,13 +11,18 @@ Containerised Necesse dedicated server ready for GitHub distribution. It builds 
 - Optional `PUID`/`PGID` remap for rootless Docker hosts and custom volume ownership.
 
 ## Quickstart
-1. Copy `.env.example` to `.env` and adjust values (`WORLD_NAME`, `SERVER_PASSWORD`, etc.).
-2. Forward UDP port `14159` on your router/firewall to the host running this container.
-3. Build and start the stack:
+1. Clone the repo and change into it:
+   ```bash
+   git clone git@github.com:andreas-glaser/necesse-docker-compose.git
+   cd necesse-docker-compose
+   ```
+2. Copy `.env.example` to `.env` and adjust values (`WORLD_NAME`, `SERVER_PASSWORD`, etc.).
+3. Forward UDP port `14159` on your router/firewall to the host running this container.
+4. Build and start the stack:
    ```bash
    docker compose up --build -d
    ```
-4. Tail logs to confirm launch:
+5. Tail logs to confirm launch:
    ```bash
    docker compose logs -f necesse
    ```
