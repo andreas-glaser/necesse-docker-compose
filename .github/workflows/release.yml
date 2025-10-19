@@ -5,6 +5,9 @@ on:
     tags:
       - "v*"
 
+permissions:
+  contents: write
+
 jobs:
   package:
     runs-on: ubuntu-latest
@@ -17,16 +20,34 @@ jobs:
       - name: Create release archives
         run: |
           set -euo pipefail
-          release_name="necesse-docker-compose-${GITHUB_REF_NAME}"
+          tag_name="${GITHUB_REF_NAME}"
+          release_name="necesse-docker-compose-${tag_name}"
           mkdir "${release_name}"
           cp Dockerfile docker-compose.yml entrypoint.sh README.md LICENSE .env.example CHANGELOG.md "${release_name}/"
           cp -r .github "${release_name}/.github"
           tar -czf "${release_name}.tar.gz" "${release_name}"
           zip -r "${release_name}.zip" "${release_name}"
 
+      - name: Generate release notes
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          awk -v ver="$version" '
+            /^## \[/ {
+              if (found) exit
+              if ($0 ~ "^## \\[" ver "\\]") {found=1; next}
+            }
+            found {print}
+          ' CHANGELOG.md | sed '/^$/d' > RELEASE_NOTES.md
+          if [ ! -s RELEASE_NOTES.md ]; then
+            echo "No changelog entry found for ${version}" >&2
+            exit 1
+          fi
+
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v1
         with:
+          body_path: RELEASE_NOTES.md
           files: |
             necesse-docker-compose-${{ github.ref_name }}.tar.gz
             necesse-docker-compose-${{ github.ref_name }}.zip
