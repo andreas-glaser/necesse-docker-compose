@@ -1,0 +1,11 @@
+.idea
+.claude
+
+# Environment configuration
+.env
+
+# Server data (saves, configs, logs)
+data/
+
+# Docker volumes
+*.log

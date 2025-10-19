@@ -1,0 +1,61 @@
+services:
+  necesse:
+    build: .
+    image: necesse-server:latest
+    container_name: necesse
+    restart: unless-stopped
+
+    # Port mapping - UDP 14159 is the default Necesse port
+    ports:
+      - "${SERVER_PORT:-14159}:14159/udp"
+
+    # Environment variables for server configuration
+    # All variables are loaded from .env file
+    environment:
+      # Basic settings
+      - SERVER_PORT=${SERVER_PORT:-14159}
+      - WORLD_NAME=${WORLD_NAME:-MyWorld}
+
+      # Server parameters
+      - SERVER_PASSWORD=${SERVER_PASSWORD}
+      - SERVER_SLOTS=${SERVER_SLOTS}
+      - SERVER_OWNER=${SERVER_OWNER}
+      - SERVER_MOTD=${SERVER_MOTD}
+
+      # Gameplay settings
+      - PAUSE_WHEN_EMPTY=${PAUSE_WHEN_EMPTY}
+      - GIVE_CLIENTS_POWER=${GIVE_CLIENTS_POWER}
+
+      # Advanced settings
+      - ENABLE_LOGGING=${ENABLE_LOGGING}
+      - ZIP_SAVES=${ZIP_SAVES}
+      - SERVER_LANGUAGE=${SERVER_LANGUAGE}
+      - SETTINGS_FILE=${SETTINGS_FILE}
+      - BIND_IP=${BIND_IP}
+      - MAX_CLIENT_LATENCY=${MAX_CLIENT_LATENCY}
+      - LOCAL_DIR=${LOCAL_DIR:-0}
+      - DATA_DIR=${DATA_DIR}
+      - LOGS_DIR=${LOGS_DIR}
+      - UPDATE_ON_START=${UPDATE_ON_START}
+      - JAVA_OPTS=${JAVA_OPTS}
+      - PUID=${PUID}
+      - PGID=${PGID}
+
+    # Persistent storage for world saves, configs, and logs
+    volumes:
+      - ./data:/home/necesse/.config/Necesse
+
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'Server.jar' >/dev/null"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+    # Resource limits (optional, adjust as needed)
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+        reservations:
+          memory: 512M
