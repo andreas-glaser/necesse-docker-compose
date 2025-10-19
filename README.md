@@ -11,7 +11,7 @@ Containerised Necesse dedicated server ready for GitHub distribution. It builds 
 - Optional `PUID`/`PGID` remap for rootless Docker hosts and custom volume ownership.
 
 ## Quickstart
-1. Clone the repo and change into it:
+1. Clone the repo and change into it (SSH shown; substitute HTTPS if you do not have Git configured with keys):
    ```bash
    git clone git@github.com:andreas-glaser/necesse-docker-compose.git
    cd necesse-docker-compose
@@ -26,6 +26,16 @@ Containerised Necesse dedicated server ready for GitHub distribution. It builds 
    ```bash
    docker compose logs -f necesse
    ```
+
+## Downloading Without Git
+
+If you do not have Git installed, you can either download a release archive from the GitHub Releases page or build one locally:
+
+```bash
+make package
+```
+
+The command above creates `dist/necesse-docker-compose-<version>.tar.gz` containing all required files. Extract it anywhere and continue with the Quickstart from step 2.
 
 ## Environment Variables
 
