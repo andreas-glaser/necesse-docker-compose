@@ -4,7 +4,7 @@ All notable changes to this project are documented here. The format is based on 
 
 ## [Unreleased]
 ### Changed
-- Deduplicated README Quickstart instructions covering release downloads and cloning.
+- Reworked README for server admins with clearer quickstart, management guidance, and streamlined feature notes.
 
 ## [0.1.0] - 2025-10-19
 ### Added
