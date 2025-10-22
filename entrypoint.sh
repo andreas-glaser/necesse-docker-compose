@@ -11,6 +11,7 @@ AUTO_UPDATE_FLAG_FILE="/tmp/necesse-auto-update"
 SERVER_PID=""
 AUTO_UPDATE_MONITOR_PID=""
 SERVER_EXIT_CODE=0
+AUTO_UPDATE_INTERVAL_MINUTES_NORMALIZED=0
 
 lowercase() {
     printf '%s' "$1" | tr '[:upper:]' '[:lower:]'
@@ -75,9 +76,11 @@ auto_update_interval_seconds() {
     fi
 
     if printf '%s' "${interval}" | grep -Eq '^[0-9]+$'; then
+        AUTO_UPDATE_INTERVAL_MINUTES_NORMALIZED="${interval}"
         printf '%s' "$((interval * 60))"
     else
         echo "AUTO_UPDATE_INTERVAL_MINUTES must be numeric; disabling auto update." >&2
+        AUTO_UPDATE_INTERVAL_MINUTES_NORMALIZED=0
         printf '0'
     fi
 }
@@ -119,6 +122,8 @@ start_auto_update_monitor() {
     if [ "${seconds}" -le 0 ]; then
         return
     fi
+
+    echo "Auto-update: enabled; checking for new builds every ${AUTO_UPDATE_INTERVAL_MINUTES_NORMALIZED} minute(s)."
 
     (
         while true; do

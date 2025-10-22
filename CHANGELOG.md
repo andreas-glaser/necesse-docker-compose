@@ -7,6 +7,7 @@ All notable changes to this project are documented here. The format is based on 
 - Automatic update watcher controlled by `AUTO_UPDATE_INTERVAL_MINUTES` that checks Steam for new builds and restarts the server.
 ### Changed
 - Reworked README for server admins with clearer quickstart, management guidance, and streamlined feature notes.
+- Auto-update now logs when periodic checks are enabled so admins know the cadence.
 
 ## [0.1.0] - 2025-10-19
 ### Added
