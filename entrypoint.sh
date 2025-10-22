@@ -3,8 +3,14 @@ set -eu
 
 STEAMCMD_DIR="/steamapps"
 APP_DIR="/app"
+APP_ID="1169370"
 RUN_USER="${CONTAINER_USER:-necesse}"
 RUN_GROUP="${CONTAINER_GROUP:-necesse}"
+AUTO_UPDATE_FLAG_FILE="/tmp/necesse-auto-update"
+
+SERVER_PID=""
+AUTO_UPDATE_MONITOR_PID=""
+SERVER_EXIT_CODE=0
 
 lowercase() {
     printf '%s' "$1" | tr '[:upper:]' '[:lower:]'
@@ -19,14 +25,6 @@ run_as_user() {
         gosu "${RUN_USER}:${RUN_GROUP}" "$@"
     else
         "$@"
-    fi
-}
-
-exec_as_user() {
-    if is_root; then
-        exec gosu "${RUN_USER}:${RUN_GROUP}" "$@"
-    else
-        exec "$@"
     fi
 }
 
@@ -54,20 +52,103 @@ adjust_permissions() {
         "${STEAMCMD_DIR}"
 }
 
-maybe_update_server() {
-    update_flag="$(lowercase "${UPDATE_ON_START:-false}")"
-    if [ ! -f "$APP_DIR/Server.jar" ] || [ "$update_flag" = "true" ]; then
-        echo "Running SteamCMD to install or update Necesse..."
-        run_as_user "$STEAMCMD_DIR/steamcmd.sh" +runscript "$STEAMCMD_DIR/update_necesse.txt"
-        echo "SteamCMD run complete."
+get_manifest_buildid() {
+    manifest_path="${STEAMCMD_DIR}/steamapps/appmanifest_${APP_ID}.acf"
+    if [ -f "${manifest_path}" ]; then
+        awk -F'"' '/"buildid"/ {print $4; exit}' "${manifest_path}"
     fi
 }
 
-build_command() {
+fetch_remote_buildid() {
+    run_as_user "$STEAMCMD_DIR/steamcmd.sh" \
+        +login anonymous \
+        +app_info_update 1 \
+        +app_info_print "${APP_ID}" \
+        +quit \
+        | awk -F'"' '/"buildid"/ {print $4; exit}'
+}
+
+auto_update_interval_seconds() {
+    interval="${AUTO_UPDATE_INTERVAL_MINUTES:-0}"
+    if [ -z "${interval}" ]; then
+        interval=0
+    fi
+
+    if printf '%s' "${interval}" | grep -Eq '^[0-9]+$'; then
+        printf '%s' "$((interval * 60))"
+    else
+        echo "AUTO_UPDATE_INTERVAL_MINUTES must be numeric; disabling auto update." >&2
+        printf '0'
+    fi
+}
+
+check_for_remote_update() {
+    current="$(get_manifest_buildid || true)"
+    remote="$(fetch_remote_buildid || true)"
+
+    if [ -z "${remote}" ]; then
+        echo "Auto-update: unable to determine remote build ID." >&2
+        return 1
+    fi
+
+    if [ -z "${current}" ]; then
+        echo "Auto-update: no local build found; treating as update required."
+        return 0
+    fi
+
+    if [ "${remote}" != "${current}" ]; then
+        echo "Auto-update: new build detected (local ${current}, remote ${remote})."
+        return 0
+    fi
+
+    return 1
+}
+
+stop_auto_update_monitor() {
+    if [ -n "${AUTO_UPDATE_MONITOR_PID}" ]; then
+        if kill -0 "${AUTO_UPDATE_MONITOR_PID}" 2>/dev/null; then
+            kill "${AUTO_UPDATE_MONITOR_PID}" 2>/dev/null || true
+        fi
+        wait "${AUTO_UPDATE_MONITOR_PID}" 2>/dev/null || true
+        AUTO_UPDATE_MONITOR_PID=""
+    fi
+}
+
+start_auto_update_monitor() {
+    seconds="$(auto_update_interval_seconds)"
+    if [ "${seconds}" -le 0 ]; then
+        return
+    fi
+
+    (
+        while true; do
+            sleep "${seconds}"
+            if check_for_remote_update; then
+                touch "${AUTO_UPDATE_FLAG_FILE}"
+                echo "Auto-update: stopping server to apply latest build."
+                pkill -f 'Server.jar' >/dev/null 2>&1 || true
+                exit 0
+            fi
+        done
+    ) &
+    AUTO_UPDATE_MONITOR_PID=$!
+}
+
+stop_server() {
+    if [ -n "${SERVER_PID}" ]; then
+        if kill -0 "${SERVER_PID}" 2>/dev/null; then
+            kill "${SERVER_PID}" 2>/dev/null || true
+        fi
+        wait "${SERVER_PID}" 2>/dev/null || true
+        SERVER_PID=""
+    fi
+}
+
+launch_server() {
     set -- java
 
     if [ -n "${JAVA_OPTS:-}" ]; then
-        # shellcheck disable=SC2086 # allow intentional word splitting for JVM options
+        # shellcheck disable=SC2086
         for opt in ${JAVA_OPTS}; do
             set -- "$@" "$opt"
         done
@@ -150,9 +231,63 @@ build_command() {
     printf '  %s' "$@"
     printf '\n\n'
 
-    exec_as_user "$@"
+    run_as_user "$@" &
+    SERVER_PID=$!
 }
 
+wait_for_server() {
+    if [ -n "${SERVER_PID}" ]; then
+        if wait "${SERVER_PID}"; then
+            SERVER_EXIT_CODE=0
+        else
+            SERVER_EXIT_CODE=$?
+        fi
+        SERVER_PID=""
+    fi
+}
+
+handle_exit() {
+    trap - INT TERM
+    stop_auto_update_monitor
+    stop_server
+    exit 0
+}
+
+maybe_update_server() {
+    update_flag="$(lowercase "${UPDATE_ON_START:-false}")"
+
+    if [ -f "${AUTO_UPDATE_FLAG_FILE}" ]; then
+        update_flag="true"
+    fi
+
+    if [ ! -f "$APP_DIR/Server.jar" ] || [ "$update_flag" = "true" ]; then
+        echo "Running SteamCMD to install or update Necesse..."
+        run_as_user "$STEAMCMD_DIR/steamcmd.sh" +runscript "$STEAMCMD_DIR/update_necesse.txt"
+        echo "SteamCMD run complete."
+    fi
+
+    rm -f "${AUTO_UPDATE_FLAG_FILE}"
+}
+
+main_loop() {
+    while true; do
+        SERVER_EXIT_CODE=0
+        maybe_update_server
+        launch_server
+        start_auto_update_monitor
+        wait_for_server
+        stop_auto_update_monitor
+
+        if [ -f "${AUTO_UPDATE_FLAG_FILE}" ]; then
+            echo "Auto-update: restarting server with fresh binaries."
+            continue
+        fi
+
+        exit "${SERVER_EXIT_CODE}"
+    done
+}
+
+trap 'handle_exit' INT TERM
+
 adjust_permissions
-maybe_update_server
-build_command
+main_loop

@@ -6,6 +6,7 @@ Self-host the Necesse dedicated server with Docker Compose. The image installs t
 - One `docker compose up` builds the image and launches the server with the latest Steam files.
 - World saves, configs, and logs stay under `./data` for easy backup and migration.
 - Optional `UPDATE_ON_START=true` keeps the container patched automatically on each start.
+- Background auto-update watcher (set `AUTO_UPDATE_INTERVAL_MINUTES`) restarts the server when Steam ships a new build.
 - Map container permissions to your host user with `PUID`/`PGID` so binds remain writable on rootless setups.
 - Health check and structured logging help detect crashes and keep an eye on the process.
 
@@ -43,6 +44,11 @@ Self-host the Necesse dedicated server with Docker Compose. The image installs t
   - Run `docker compose build necesse && docker compose up -d`
 - Check if the JVM process is healthy: `docker compose exec necesse pgrep -f 'Server.jar'`
 
+## Automatic updates
+- Enable the built-in watcher by setting `AUTO_UPDATE_INTERVAL_MINUTES` (e.g. `30`).
+- The container will poll SteamCMD on that cadence and gracefully restart the server when a new build appears.
+- Combine with `docker compose logs -f necesse` to watch the update process; Steam downloads happen right before the restart.
+
 ## Configuration reference
 All settings live in `.env`. Fields left blank fall back to the defaults baked into the image.
 
@@ -75,6 +81,7 @@ All settings live in `.env`. Fields left blank fall back to the defaults baked i
 | `SETTINGS_FILE` | Path to a custom `server.cfg` within the container. |
 | `BIND_IP` | Specific interface/IP for the server to bind. |
 | `UPDATE_ON_START` | `true` forces a SteamCMD update every start. |
+| `AUTO_UPDATE_INTERVAL_MINUTES` | Poll interval (in minutes) for automatic updates; `0` disables. |
 | `JAVA_OPTS` | Additional JVM flags (e.g. `-Xmx2G`). |
 | `PUID` / `PGID` | Host UID/GID to chown data before starting. |
 
@@ -98,8 +105,8 @@ A built-in Docker health check uses `pgrep` to ensure the Java process stays ali
 - **Server reports old version:** set `UPDATE_ON_START=true` temporarily or rebuild the image to pull the latest Steam release.
 
 ## Reference
-- [Necesse Dedicated Server wiki (Feb 2025)](https://wiki.necesse.net/wiki/Dedicated_server)
-- [Necesse Multiplayer Linux guide (Nov 2024)](https://wiki.necesse.net/wiki/Multiplayer-Linux)
+- [Necesse Dedicated Server wiki](https://wiki.necesse.net/wiki/Dedicated_server)
+- [Necesse Multiplayer Linux guide](https://wiki.necesse.net/wiki/Multiplayer-Linux)
 
 ## License
 Released under the [MIT License](LICENSE).
