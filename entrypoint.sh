@@ -12,6 +12,7 @@ SERVER_PID=""
 AUTO_UPDATE_MONITOR_PID=""
 SERVER_EXIT_CODE=0
 AUTO_UPDATE_INTERVAL_MINUTES_NORMALIZED=0
+AUTO_UPDATE_INTERVAL_SECONDS=0
 
 lowercase() {
     printf '%s' "$1" | tr '[:upper:]' '[:lower:]'
@@ -69,7 +70,7 @@ fetch_remote_buildid() {
         | awk -F'"' '/"buildid"/ {print $4; exit}'
 }
 
-auto_update_interval_seconds() {
+calculate_auto_update_interval() {
     interval="${AUTO_UPDATE_INTERVAL_MINUTES:-0}"
     if [ -z "${interval}" ]; then
         interval=0
@@ -77,11 +78,11 @@ auto_update_interval_seconds() {
 
     if printf '%s' "${interval}" | grep -Eq '^[0-9]+$'; then
         AUTO_UPDATE_INTERVAL_MINUTES_NORMALIZED="${interval}"
-        printf '%s' "$((interval * 60))"
+        AUTO_UPDATE_INTERVAL_SECONDS=$((interval * 60))
     else
         echo "AUTO_UPDATE_INTERVAL_MINUTES must be numeric; disabling auto update." >&2
         AUTO_UPDATE_INTERVAL_MINUTES_NORMALIZED=0
-        printf '0'
+        AUTO_UPDATE_INTERVAL_SECONDS=0
     fi
 }
 
@@ -118,7 +119,8 @@ stop_auto_update_monitor() {
 }
 
 start_auto_update_monitor() {
-    seconds="$(auto_update_interval_seconds)"
+    calculate_auto_update_interval
+    seconds="${AUTO_UPDATE_INTERVAL_SECONDS}"
     if [ "${seconds}" -le 0 ]; then
         return
     fi
