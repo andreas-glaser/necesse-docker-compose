@@ -1,10 +1,10 @@
 # Necesse Dedicated Server (Docker)
 
-Self-host the Necesse dedicated server with Docker Compose. The image installs the official Steam release via SteamCMD, keeps your world data on the host, and exposes every server flag through a simple `.env` file.
+Self-host the Necesse dedicated server with Docker. The image installs the official Steam release via SteamCMD, keeps your world data on the host, and exposes every server flag through a simple `.env` file.
 
 ## Highlights
-- Prebuilt images published to Docker Hub: [`andreasgl4ser/necesse-server`](https://hub.docker.com/r/andreasgl4ser/necesse-server).
-- One `docker compose up` builds the image locally if you prefer to bake your own binaries.
+- Pull-and-run image published to Docker Hub: [`andreasgl4ser/necesse-server`](https://hub.docker.com/r/andreasgl4ser/necesse-server).
+- Compose stack ships with sensible defaults; local image rebuilds remain optional for custom tweaks.
 - World saves, configs, and logs stay under `./data` for easy backup and migration.
 - Optional `UPDATE_ON_START=true` keeps the container patched automatically on each start.
 - Background auto-update watcher (set `AUTO_UPDATE_INTERVAL_MINUTES`) restarts the server when Steam ships a new build.
@@ -17,23 +17,23 @@ Self-host the Necesse dedicated server with Docker Compose. The image installs t
 - Ability to forward UDP port `14159` (or your chosen port) from the internet to this host.
 
 ## Quickstart
-1. Download the latest release archive (`.zip` or `.tar.gz`) from the [releases page](https://github.com/andreas-glaser/necesse-docker-server/releases) and extract it, or clone the repository:
+1. Download the latest release archive (`.zip` or `.tar.gz`) from the [releases page](https://github.com/andreas-glaser/necesse-docker-server/releases) and extract it. Prefer Git? Clone instead:
    ```bash
    git clone git@github.com:andreas-glaser/necesse-docker-server.git
    cd necesse-docker-server
    ```
-   If you used the release archive, `cd` into the extracted folder instead.
+   If you downloaded an archive, `cd` into the extracted directory before continuing.
 2. Copy `.env.example` to `.env`.
 3. Edit `.env` to set at least `WORLD_NAME`, `SERVER_PASSWORD` (optional), and any other preferences.
 4. (Optional) Set `PUID`/`PGID` to match the host account that owns the `data/` directory.
-5. Pull the latest published image (optional but recommended for faster updates):
+5. Pull the published image so Compose starts with the newest build:
    ```bash
    docker compose pull necesse
    ```
-   To pin a specific release, export `IMAGE_TAG`, for example `export IMAGE_TAG=1.0.0`.
-6. Build and start the stack (build step is skipped automatically when the image already exists locally):
+   Pin a specific version by exporting `IMAGE_TAG` (e.g. `export IMAGE_TAG=1.0.1`) before running Compose.
+6. Start the stack:
    ```bash
-   docker compose up --build -d
+   docker compose up -d
    ```
 7. Tail logs until you see the server announce it is ready:
    ```bash
@@ -43,8 +43,8 @@ Self-host the Necesse dedicated server with Docker Compose. The image installs t
 > The first start uses SteamCMD to download the Necesse server files and can take a few minutes.
 
 ### Choosing an image version
-- The compose file defaults to `andreasgl4ser/necesse-server:latest`. Set `IMAGE_TAG` (environment variable or in `.env`) to pin a release, e.g. `IMAGE_TAG=1.0.0`.
-- Building locally (`docker compose build`) still works and will tag the result as `andreasgl4ser/necesse-server:latest` in your daemon. Use this when you need custom tweaks.
+- Compose defaults to `andreasgl4ser/necesse-server:latest`. Override by setting `IMAGE_TAG` (environment variable or in `.env`), e.g. `IMAGE_TAG=1.0.1`.
+- Need to customize the image? Run `docker compose build necesse` and Compose will use the locally built tag while still allowing future pulls.
 
 ## Managing the server
 - Restart after config changes: `docker compose up -d`
@@ -52,7 +52,7 @@ Self-host the Necesse dedicated server with Docker Compose. The image installs t
 - Update to the newest game build:
   - Set `UPDATE_ON_START=true` and restart, **or**
   - Run `docker compose pull necesse && docker compose up -d`
-  - Run `docker compose build necesse && docker compose up -d` if you need a local rebuild
+  - Run `docker compose build necesse && docker compose up -d` if you maintain a forked image
 - Check if the JVM process is healthy: `docker compose exec necesse pgrep -f 'Server.jar'`
 
 ## Automatic updates
