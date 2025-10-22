@@ -3,6 +3,10 @@
 All notable changes to this project are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- GitHub Actions publishes Docker images to Docker Hub (`andreasgl4ser/necesse-server`) on tagged releases.
+### Changed
+- `docker-compose.yml` now defaults to the published Docker Hub image and accepts an optional `IMAGE_TAG`.
 
 ## [1.0.0] - 2025-10-22
 ### Added

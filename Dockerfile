@@ -1,6 +1,9 @@
 # Necesse Dedicated Server Dockerfile
 FROM debian:bullseye-slim
 
+ARG BUILD_VERSION=dev
+ARG BUILD_REVISION=unknown
+
 # Create necesse user with specified UID/GID for proper permissions
 ARG user=necesse
 ARG group=necesse
@@ -27,6 +30,14 @@ RUN mkdir -p /steamapps && \
     curl -sqL https://steamcdn-a.akamaihd.net/client/installer/steamcmd_linux.tar.gz | tar zxvf - -C /steamapps
 
 WORKDIR /steamapps
+
+# OCI metadata for the built image
+LABEL org.opencontainers.image.title="Necesse Dedicated Server" \
+      org.opencontainers.image.description="Containerised Necesse dedicated server with SteamCMD-managed updates and admin-friendly automation." \
+      org.opencontainers.image.source="https://github.com/andreas-glaser/necesse-docker-compose" \
+      org.opencontainers.image.url="https://github.com/andreas-glaser/necesse-docker-compose" \
+      org.opencontainers.image.version="${BUILD_VERSION}" \
+      org.opencontainers.image.revision="${BUILD_REVISION}"
 
 # Create SteamCMD update script
 RUN echo '@ShutdownOnFailedCommand 1' > update_necesse.txt && \

@@ -1,7 +1,7 @@
 services:
   necesse:
     build: .
-    image: necesse-server:latest
+    image: andreasgl4ser/necesse-server:${IMAGE_TAG:-latest}
     container_name: necesse
     restart: unless-stopped
 

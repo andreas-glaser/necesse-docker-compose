@@ -3,7 +3,8 @@
 Self-host the Necesse dedicated server with Docker Compose. The image installs the official Steam release via SteamCMD, keeps your world data on the host, and exposes every server flag through a simple `.env` file.
 
 ## Highlights
-- One `docker compose up` builds the image and launches the server with the latest Steam files.
+- Prebuilt images published to Docker Hub: [`andreasgl4ser/necesse-server`](https://hub.docker.com/r/andreasgl4ser/necesse-server).
+- One `docker compose up` builds the image locally if you prefer to bake your own binaries.
 - World saves, configs, and logs stay under `./data` for easy backup and migration.
 - Optional `UPDATE_ON_START=true` keeps the container patched automatically on each start.
 - Background auto-update watcher (set `AUTO_UPDATE_INTERVAL_MINUTES`) restarts the server when Steam ships a new build.
@@ -25,23 +26,33 @@ Self-host the Necesse dedicated server with Docker Compose. The image installs t
 2. Copy `.env.example` to `.env`.
 3. Edit `.env` to set at least `WORLD_NAME`, `SERVER_PASSWORD` (optional), and any other preferences.
 4. (Optional) Set `PUID`/`PGID` to match the host account that owns the `data/` directory.
-5. Build and start the stack:
+5. Pull the latest published image (optional but recommended for faster updates):
+   ```bash
+   docker compose pull necesse
+   ```
+   To pin a specific release, export `IMAGE_TAG`, for example `export IMAGE_TAG=1.0.0`.
+6. Build and start the stack (build step is skipped automatically when the image already exists locally):
    ```bash
    docker compose up --build -d
    ```
-6. Tail logs until you see the server announce it is ready:
+7. Tail logs until you see the server announce it is ready:
    ```bash
    docker compose logs -f necesse
    ```
 
 > The first start uses SteamCMD to download the Necesse server files and can take a few minutes.
 
+### Choosing an image version
+- The compose file defaults to `andreasgl4ser/necesse-server:latest`. Set `IMAGE_TAG` (environment variable or in `.env`) to pin a release, e.g. `IMAGE_TAG=1.0.0`.
+- Building locally (`docker compose build`) still works and will tag the result as `andreasgl4ser/necesse-server:latest` in your daemon. Use this when you need custom tweaks.
+
 ## Managing the server
 - Restart after config changes: `docker compose up -d`
 - Stop the server: `docker compose down`
 - Update to the newest game build:
   - Set `UPDATE_ON_START=true` and restart, **or**
-  - Run `docker compose build necesse && docker compose up -d`
+  - Run `docker compose pull necesse && docker compose up -d`
+  - Run `docker compose build necesse && docker compose up -d` if you need a local rebuild
 - Check if the JVM process is healthy: `docker compose exec necesse pgrep -f 'Server.jar'`
 
 ## Automatic updates
@@ -103,6 +114,11 @@ A built-in Docker health check uses `pgrep` to ensure the Java process stays ali
 - **Players cannot join:** ensure UDP port forwarding matches `SERVER_PORT` and that your public IP is correct. Online port testers often report false negatives; testing in-game is most reliable.
 - **Config changes not applying:** stop the container, edit `.env`, and run `docker compose up -d` again so the entrypoint rebuilds the command.
 - **Server reports old version:** set `UPDATE_ON_START=true` temporarily or rebuild the image to pull the latest Steam release.
+
+## Releasing
+1. Update [`CHANGELOG.md`](CHANGELOG.md) and any documentation changes.
+2. Commit to `main`, tag the release (`git tag -a vX.Y.Z -m "vX.Y.Z"`), then `git push origin main --follow-tags`.
+3. GitHub Actions publishes the archives (ZIP/TAR) and pushes matching images to Docker Hub (`andreasgl4ser/necesse-server:latest` and `:X.Y.Z`). Ensure `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` secrets are configured before tagging.
 
 ## Reference
 - [Necesse Dedicated Server wiki](https://wiki.necesse.net/wiki/Dedicated_server)
