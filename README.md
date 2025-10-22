@@ -17,10 +17,10 @@ Self-host the Necesse dedicated server with Docker Compose. The image installs t
 - Ability to forward UDP port `14159` (or your chosen port) from the internet to this host.
 
 ## Quickstart
-1. Download the latest release archive (`.zip` or `.tar.gz`) from the [releases page](https://github.com/andreas-glaser/necesse-docker-compose/releases) and extract it, or clone the repository:
+1. Download the latest release archive (`.zip` or `.tar.gz`) from the [releases page](https://github.com/andreas-glaser/necesse-docker-server/releases) and extract it, or clone the repository:
    ```bash
-   git clone git@github.com:andreas-glaser/necesse-docker-compose.git
-   cd necesse-docker-compose
+   git clone git@github.com:andreas-glaser/necesse-docker-server.git
+   cd necesse-docker-server
    ```
    If you used the release archive, `cd` into the extracted folder instead.
 2. Copy `.env.example` to `.env`.

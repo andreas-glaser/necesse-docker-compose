@@ -21,7 +21,7 @@ jobs:
         run: |
           set -euo pipefail
           tag_name="${GITHUB_REF_NAME}"
-          release_name="necesse-docker-compose-${tag_name}"
+          release_name="necesse-docker-server-${tag_name}"
           mkdir "${release_name}"
           cp Dockerfile docker-compose.yml entrypoint.sh README.md LICENSE .env.example CHANGELOG.md "${release_name}/"
           cp -r .github "${release_name}/.github"
@@ -49,8 +49,8 @@ jobs:
         with:
           body_path: RELEASE_NOTES.md
           files: |
-            necesse-docker-compose-${{ github.ref_name }}.tar.gz
-            necesse-docker-compose-${{ github.ref_name }}.zip
+            necesse-docker-server-${{ github.ref_name }}.tar.gz
+            necesse-docker-server-${{ github.ref_name }}.zip
 
   docker-image:
     needs: package

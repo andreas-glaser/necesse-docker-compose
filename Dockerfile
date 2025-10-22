@@ -34,8 +34,8 @@ WORKDIR /steamapps
 # OCI metadata for the built image
 LABEL org.opencontainers.image.title="Necesse Dedicated Server" \
       org.opencontainers.image.description="Containerised Necesse dedicated server with SteamCMD-managed updates and admin-friendly automation." \
-      org.opencontainers.image.source="https://github.com/andreas-glaser/necesse-docker-compose" \
-      org.opencontainers.image.url="https://github.com/andreas-glaser/necesse-docker-compose" \
+      org.opencontainers.image.source="https://github.com/andreas-glaser/necesse-docker-server" \
+      org.opencontainers.image.url="https://github.com/andreas-glaser/necesse-docker-server" \
       org.opencontainers.image.version="${BUILD_VERSION}" \
       org.opencontainers.image.revision="${BUILD_REVISION}"
 
