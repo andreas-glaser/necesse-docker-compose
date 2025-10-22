@@ -78,6 +78,7 @@ ENV WORLD_NAME=world \
     DATA_DIR= \
     LOGS_DIR= \
     UPDATE_ON_START=false \
+    AUTO_UPDATE_INTERVAL_MINUTES=0 \
     JAVA_OPTS=
 
 # Server data volume
