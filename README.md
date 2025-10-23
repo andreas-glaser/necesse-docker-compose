@@ -1,5 +1,10 @@
 # Necesse Dedicated Server (Docker)
 
+[![CI](https://github.com/andreas-glaser/necesse-docker-server/actions/workflows/ci.yml/badge.svg)](https://github.com/andreas-glaser/necesse-docker-server/actions/workflows/ci.yml)
+[![Latest Release](https://img.shields.io/github/v/release/andreas-glaser/necesse-docker-server?sort=semver)](https://github.com/andreas-glaser/necesse-docker-server/releases)
+[![Docker Pulls](https://img.shields.io/docker/pulls/andreasgl4ser/necesse-server)](https://hub.docker.com/r/andreasgl4ser/necesse-server)
+[![Image Size](https://img.shields.io/docker/image-size/andreasgl4ser/necesse-server/latest?label=image%20size)](https://hub.docker.com/r/andreasgl4ser/necesse-server)
+
 Dockerised Necesse dedicated server that always pulls the latest Steam release, keeps saves on the host, and exposes every server flag through environment variables. Published on Docker Hub as [`andreasgl4ser/necesse-server`](https://hub.docker.com/r/andreasgl4ser/necesse-server).
 
 ---
