@@ -9,5 +9,6 @@ Welcome! This directory collects contributor-focused guides and references for t
 - [Release Guide](GIT_RELEASE_GUIDE.md) – step-by-step checklist for preparing, tagging, and publishing a release.
 - [Project README](../README.md) – end-user instructions, Docker Hub quickstarts, configuration reference, and troubleshooting tips.
 - [CHANGELOG](../CHANGELOG.md) – list of notable changes per release.
+- Assets: `docs/assets/trailer.gif` (Necesse trailer snippet used in README).
 
 More docs to add? Open a pull request or update this index to keep the list current.

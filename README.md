@@ -5,7 +5,7 @@
 [![Docker Pulls](https://img.shields.io/docker/pulls/andreasgl4ser/necesse-server)](https://hub.docker.com/r/andreasgl4ser/necesse-server)
 [![Image Size](https://img.shields.io/docker/image-size/andreasgl4ser/necesse-server/latest?label=image%20size)](https://hub.docker.com/r/andreasgl4ser/necesse-server)
 
-![Necesse gameplay](https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/1169040/extras/6b1743004767ed52c5376274f701f8bd.poster.avif?t=1760982320)
+![Necesse gameplay](docs/assets/trailer.gif)
 
 Dockerised Necesse dedicated server that always pulls the latest Steam release, keeps saves on the host, and exposes every server flag through environment variables. Published on Docker Hub as [`andreasgl4ser/necesse-server`](https://hub.docker.com/r/andreasgl4ser/necesse-server).
 
