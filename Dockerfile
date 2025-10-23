@@ -71,6 +71,7 @@ ENV CONTAINER_USER=${user} \
 EXPOSE 14159/udp
 
 # Set default environment variables
+# hadolint ignore=DL3040
 ENV WORLD_NAME=world \
     SERVER_PORT=14159 \
     SERVER_SLOTS=10 \
