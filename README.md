@@ -1,128 +1,158 @@
 # Necesse Dedicated Server (Docker)
 
-Self-host the Necesse dedicated server with Docker. The image installs the official Steam release via SteamCMD, keeps your world data on the host, and exposes every server flag through a simple `.env` file.
+Dockerised Necesse dedicated server that always pulls the latest Steam release, keeps saves on the host, and exposes every server flag through environment variables. Published on Docker Hub as [`andreasgl4ser/necesse-server`](https://hub.docker.com/r/andreasgl4ser/necesse-server).
 
-## Highlights
-- Pull-and-run image published to Docker Hub: [`andreasgl4ser/necesse-server`](https://hub.docker.com/r/andreasgl4ser/necesse-server).
-- Compose stack ships with sensible defaults; local image rebuilds remain optional for custom tweaks.
-- World saves, configs, and logs stay under `./data` for easy backup and migration.
-- Optional `UPDATE_ON_START=true` keeps the container patched automatically on each start.
-- Background auto-update watcher (set `AUTO_UPDATE_INTERVAL_MINUTES`) restarts the server when Steam ships a new build.
-- Map container permissions to your host user with `PUID`/`PGID` so binds remain writable on rootless setups.
-- Health check and structured logging help detect crashes and keep an eye on the process.
+---
 
-## Prerequisites
-- Docker Engine 20.10+ and Docker Compose Plugin v2 (`docker compose` CLI).
-- At least 1 GB of free RAM (2 GB recommended for larger worlds).
-- Ability to forward UDP port `14159` (or your chosen port) from the internet to this host.
+## Run With `docker run`
 
-## Quickstart
-1. Download the latest release archive (`.zip` or `.tar.gz`) from the [releases page](https://github.com/andreas-glaser/necesse-docker-server/releases) and extract it. Prefer Git? Clone instead:
-   ```bash
-   git clone git@github.com:andreas-glaser/necesse-docker-server.git
-   cd necesse-docker-server
-   ```
-   If you downloaded an archive, `cd` into the extracted directory before continuing.
-2. Copy `.env.example` to `.env`.
-3. Edit `.env` to set at least `WORLD_NAME`, `SERVER_PASSWORD` (optional), and any other preferences.
-4. (Optional) Set `PUID`/`PGID` to match the host account that owns the `data/` directory.
-5. Pull the published image so Compose starts with the newest build:
-   ```bash
-   docker compose pull necesse
-   ```
-   Pin a specific version by exporting `IMAGE_TAG` (e.g. `export IMAGE_TAG=1.0.1`) before running Compose.
-6. Start the stack:
-   ```bash
-   docker compose up -d
-   ```
-7. Tail logs until you see the server announce it is ready:
-   ```bash
-   docker compose logs -f necesse
-   ```
+```bash
+docker run -d \
+  --name necesse \
+  -p 14159:14159/udp \
+  -v $PWD/data:/home/necesse/.config/Necesse \
+  -e WORLD_NAME=MyWorld \
+  -e SERVER_PASSWORD=changeme \
+  -e SERVER_SLOTS=10 \
+  -e UPDATE_ON_START=true \
+  -e AUTO_UPDATE_INTERVAL_MINUTES=60 \
+  andreasgl4ser/necesse-server:1.1.0
+```
 
-> The first start uses SteamCMD to download the Necesse server files and can take a few minutes.
+- Replace `changeme` with the password you want (leave blank to disable).
+- The bind mount stores saves, logs, and `cfg/server.cfg` under `./data`.
+- Forward UDP port `14159` from your router/firewall to this host.
 
-### Choosing an image version
-- Compose defaults to `andreasgl4ser/necesse-server:latest`. Override by setting `IMAGE_TAG` (environment variable or in `.env`), e.g. `IMAGE_TAG=1.0.1`.
-- Need to customize the image? Run `docker compose build necesse` and Compose will use the locally built tag while still allowing future pulls.
+To follow the latest image automatically, change the tag to `:latest`.
 
-## Managing the server
-- Restart after config changes: `docker compose up -d`
-- Stop the server: `docker compose down`
-- Update to the newest game build:
-  - Set `UPDATE_ON_START=true` and restart, **or**
-  - Run `docker compose pull necesse && docker compose up -d`
-  - Run `docker compose build necesse && docker compose up -d` if you maintain a forked image
-- Check if the JVM process is healthy: `docker compose exec necesse pgrep -f 'Server.jar'`
+---
 
-## Automatic updates
-- Enable the built-in watcher by setting `AUTO_UPDATE_INTERVAL_MINUTES` (e.g. `30`).
-- The container will poll SteamCMD on that cadence and gracefully restart the server when a new build appears.
-- Combine with `docker compose logs -f necesse` to watch the update process; Steam downloads happen right before the restart.
+## Run With Docker Compose
 
-## Configuration reference
-All settings live in `.env`. Fields left blank fall back to the defaults baked into the image.
+`docker-compose.yml`:
 
-### Core settings
-| Variable | Description |
+```yaml
+services:
+  necesse:
+    image: andreasgl4ser/necesse-server:${IMAGE_TAG:-latest}
+    container_name: necesse
+    restart: unless-stopped
+    ports:
+      - "14159:14159/udp"
+    env_file: .env
+    volumes:
+      - ./data:/home/necesse/.config/Necesse
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'Server.jar' >/dev/null"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+```
+
+`.env` (copy from `.env.example` and adjust):
+
+```
+WORLD_NAME=MyWorld
+SERVER_PASSWORD=changeme
+SERVER_SLOTS=10
+SERVER_OWNER=AdminPlayer
+SERVER_MOTD=Welcome to Necesse!
+SERVER_PORT=14159
+PUID=1000
+PGID=1000
+UPDATE_ON_START=true
+AUTO_UPDATE_INTERVAL_MINUTES=60
+IMAGE_TAG=1.1.0
+```
+
+Start / update:
+
+```bash
+docker compose pull necesse   # grab latest published image (optional if IMAGE_TAG pinned)
+docker compose up -d          # launch or restart the server
+docker compose logs -f necesse
+```
+
+Set `IMAGE_TAG` (env or `.env`) to pin a specific release; leave it blank for `latest`. To build a custom image instead, run `docker compose build necesse` and Compose will reuse it.
+
+---
+
+## Environment Variables
+
+| Variable | Purpose |
 | --- | --- |
-| `SERVER_PORT` | UDP port to expose (default `14159`). |
 | `WORLD_NAME` | World to load or create. |
-| `SERVER_PASSWORD` | Optional join password; leave blank to disable. |
-| `SERVER_SLOTS` | Maximum player slots (1-250). |
-| `SERVER_OWNER` | Player given owner permissions. |
-| `SERVER_MOTD` | Message shown on join; use `\n` for newline. |
-
-### Gameplay & session behaviour
-| Variable | Description |
-| --- | --- |
+| `SERVER_PASSWORD` | Join password; blank disables. |
+| `SERVER_SLOTS` | Maximum concurrent players (1–250). |
+| `SERVER_OWNER` | Owner player name (grants admin on join). |
+| `SERVER_MOTD` | Message shown on join (`\n` for newline). |
+| `SERVER_PORT` | UDP port inside the container (default 14159). |
 | `PAUSE_WHEN_EMPTY` | `1` pauses when empty, `0` keeps running. |
-| `GIVE_CLIENTS_POWER` | `1` favours smoother clients, `0` enforces strict validation. |
-| `SERVER_LANGUAGE` | Language code for server messages (e.g. `en`). |
-| `MAX_CLIENT_LATENCY` | Max seconds before timeout (`-maxlatency`). |
+| `GIVE_CLIENTS_POWER` | `1` smoother clients, `0` strict validation. |
 | `ENABLE_LOGGING` | `1` writes log files, `0` disables. |
 | `ZIP_SAVES` | `1` compresses saves, `0` stores plain folders. |
+| `SERVER_LANGUAGE` | Language code for server messages (`en`, `de`, …). |
+| `MAX_CLIENT_LATENCY` | Max seconds before kick (`-maxlatency`). |
+| `SETTINGS_FILE` | Path to a custom `server.cfg` inside the container. |
+| `BIND_IP` | Specific IP/interface for the server to bind. |
+| `LOCAL_DIR` | `1` appends `-localdir` flag for local storage. |
+| `DATA_DIR`, `LOGS_DIR` | Override in-container paths (folders auto-created). |
+| `UPDATE_ON_START` | `true` runs SteamCMD on every boot. |
+| `AUTO_UPDATE_INTERVAL_MINUTES` | Background poll interval; container restarts when a new Steam build is detected (`0` disables). |
+| `JAVA_OPTS` | Extra JVM flags (e.g. `-Xmx2G`). |
+| `PUID` / `PGID` | Host UID/GID to chown bind mounts (useful on rootless hosts). |
+| `IMAGE_TAG` | Override image tag in Compose (default `latest`). |
 
-### Paths, advanced flags, and host integration
-| Variable | Description |
-| --- | --- |
-| `LOCAL_DIR` | `1` appends `-localdir` for local data storage. |
-| `DATA_DIR` | Override save/config directory inside the container. |
-| `LOGS_DIR` | Override log directory inside the container. |
-| `SETTINGS_FILE` | Path to a custom `server.cfg` within the container. |
-| `BIND_IP` | Specific interface/IP for the server to bind. |
-| `UPDATE_ON_START` | `true` forces a SteamCMD update every start. |
-| `AUTO_UPDATE_INTERVAL_MINUTES` | Poll interval (in minutes) for automatic updates; `0` disables. |
-| `JAVA_OPTS` | Additional JVM flags (e.g. `-Xmx2G`). |
-| `PUID` / `PGID` | Host UID/GID to chown data before starting. |
+---
 
-## Data & backups
-The compose file binds `./data` to `/home/necesse/.config/Necesse`, which holds:
-- `cfg/server.cfg`
-- `logs/` (if logging enabled)
-- `saves/<world>.zip`
+## Data, Permissions & Monitoring
 
-Back up this directory before upgrading, migrating hosts, or testing mods. To relocate storage, change the `volumes` entry in `docker-compose.yml` and adjust `DATA_DIR` and `LOGS_DIR` as needed.
+- Saves live under `/home/necesse/.config/Necesse` (mapped to `./data`). Back it up regularly before upgrades or migrations.
+- Set `PUID`/`PGID` to match the owner of the bind-mounted folder if your Docker daemon runs rootless or you need host-level permissions preserved. The entrypoint remaps the `necesse` user before launching the JVM.
+- Health check: `pgrep -f 'Server.jar'`. Use `docker compose ps` or `docker inspect --format '{{.State.Health.Status}}' necesse` to verify.
+- Tail logs with `docker compose logs -f necesse` or from `data/logs/`.
 
-## Running as a non-root host user
-If your Docker engine runs rootless or you need specific ownership, set `PUID` and `PGID` in `.env` to the IDs of the host account that owns the data directory. The entrypoint remaps the internal `necesse` user, fixes permissions, and then drops privileges using `gosu`.
+---
 
-## Health & monitoring
-A built-in Docker health check uses `pgrep` to ensure the Java process stays alive. Container orchestrators can rely on this status to restart the service automatically. Combine it with your preferred log shipper by tailing `data/logs` or `docker compose logs`.
+## Updates & Troubleshooting
 
-## Troubleshooting
-- **Players cannot join:** ensure UDP port forwarding matches `SERVER_PORT` and that your public IP is correct. Online port testers often report false negatives; testing in-game is most reliable.
-- **Config changes not applying:** stop the container, edit `.env`, and run `docker compose up -d` again so the entrypoint rebuilds the command.
-- **Server reports old version:** set `UPDATE_ON_START=true` temporarily or rebuild the image to pull the latest Steam release.
+- **Auto updates:** `UPDATE_ON_START=true` runs SteamCMD each start. Setting `AUTO_UPDATE_INTERVAL_MINUTES` (e.g. `60`) enables continuous polling; the container stops, updates, and restarts itself when Steam publishes a new build.
+- **Players cannot join:** confirm UDP port forwarding and public IP. Some port testers give false negatives—validate in-game if unsure.
+- **Config changes ignored:** edit `.env`, then `docker compose up -d` to recreate with new flags.
+- **Version mismatch errors:** ensure both `UPDATE_ON_START` and the interval watcher are enabled, or manually pull the latest image and restart.
 
-## Releasing
-1. Update [`CHANGELOG.md`](CHANGELOG.md) and any documentation changes.
-2. Commit to `main`, tag the release (`git tag -a vX.Y.Z -m "vX.Y.Z"`), then `git push origin main --follow-tags`.
-3. GitHub Actions publishes the archives (ZIP/TAR) and pushes matching images to Docker Hub (`andreasgl4ser/necesse-server:latest` and `:X.Y.Z`). Ensure `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` secrets are configured before tagging.
+---
+
+## Clone, Develop, Contribute
+
+Prefer to work from source, tweak the image, or contribute?
+
+```bash
+git clone git@github.com:andreas-glaser/necesse-docker-server.git
+cd necesse-docker-server
+cp .env.example .env
+docker compose build necesse
+docker compose up -d
+```
+
+- Lint: `./.github/workflows/ci.yml` runs on PRs (shellcheck + docker build).
+- Release process:
+  1. Update [`CHANGELOG.md`](CHANGELOG.md) and documentation.
+  2. `git tag -a vX.Y.Z -m "vX.Y.Z"` and push with `--follow-tags`.
+  3. GitHub Actions publishes release archives and pushes Docker Hub tags (`latest`, `X.Y.Z`).
+
+Issues and pull requests welcome!
+
+---
 
 ## Reference
+
 - [Necesse Dedicated Server wiki](https://wiki.necesse.net/wiki/Dedicated_server)
 - [Necesse Multiplayer Linux guide](https://wiki.necesse.net/wiki/Multiplayer-Linux)
 
+---
+
 ## License
+
 Released under the [MIT License](LICENSE).
