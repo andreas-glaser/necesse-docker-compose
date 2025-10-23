@@ -16,7 +16,7 @@ docker run -d \
   -e SERVER_SLOTS=10 \
   -e UPDATE_ON_START=true \
   -e AUTO_UPDATE_INTERVAL_MINUTES=60 \
-  andreasgl4ser/necesse-server:1.1.0
+  andreasgl4ser/necesse-server:1.2.0
 ```
 
 - Replace `changeme` with the password you want (leave blank to disable).
@@ -63,7 +63,7 @@ PUID=1000
 PGID=1000
 UPDATE_ON_START=true
 AUTO_UPDATE_INTERVAL_MINUTES=60
-IMAGE_TAG=1.1.0
+IMAGE_TAG=1.2.0
 ```
 
 Start / update:

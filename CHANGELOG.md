@@ -4,10 +4,13 @@ All notable changes to this project are documented here. The format is based on 
 
 ## [Unreleased]
 
+## [1.2.0] - 2025-10-22
+### Added
+- Contributor documentation under `docs/` (Git workflow, commit, and release guides plus index).
+
 ## [1.1.0] - 2025-10-22
 ### Added
 - GitHub Actions publishes Docker images to Docker Hub (`andreasgl4ser/necesse-server`) on tagged releases.
-- Contributor documentation under `docs/` (Git workflow, commit, and release guides plus index).
 ### Changed
 - `docker-compose.yml` now defaults to the published Docker Hub image and accepts an optional `IMAGE_TAG`.
 - README refocused on Docker Hub workflows with updated quickstart examples.
