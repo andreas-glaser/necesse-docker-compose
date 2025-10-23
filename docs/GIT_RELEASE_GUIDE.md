@@ -22,7 +22,7 @@ A concise checklist for preparing and publishing a new Necesse Docker Server rel
 3. **Smoke test (optional but recommended)**
    ```bash
    docker compose build necesse
-  docker compose up -d
+   docker compose up -d
    docker compose logs -f necesse
    docker compose down
    ```
