@@ -5,6 +5,8 @@ Welcome! This directory collects contributor-focused guides and references for t
 ## Contents
 
 - [Git, Branching, and Tagging Guide](GIT_GUIDE.md) – workflow overview, branching strategy, and release tagging process.
+- [Commit Guide](GIT_COMMIT_GUIDE.md) – pre-commit checklist, formatting hints, and commit message conventions.
+- [Release Guide](GIT_RELEASE_GUIDE.md) – step-by-step checklist for preparing, tagging, and publishing a release.
 - [Project README](../README.md) – end-user instructions, Docker Hub quickstarts, configuration reference, and troubleshooting tips.
 - [CHANGELOG](../CHANGELOG.md) – list of notable changes per release.
 
