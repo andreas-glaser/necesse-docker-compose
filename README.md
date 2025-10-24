@@ -23,14 +23,14 @@ docker run -d \
   -e SERVER_SLOTS=10 \
   -e UPDATE_ON_START=true \
   -e AUTO_UPDATE_INTERVAL_MINUTES=60 \
-  andreasgl4ser/necesse-server:1.2.0
+  andreasgl4ser/necesse-server:latest
 ```
 
 - Replace `changeme` with the password you want (leave blank to disable).
 - The bind mount stores saves, logs, and `cfg/server.cfg` under `./data`.
 - Forward UDP port `14159` from your router/firewall to this host.
 
-To follow the latest image automatically, change the tag to `:latest`.
+To follow a specific image, change the tag to e.g. `:1.3.0`.
 
 ---
 
@@ -70,7 +70,7 @@ PUID=1000
 PGID=1000
 UPDATE_ON_START=true
 AUTO_UPDATE_INTERVAL_MINUTES=60
-IMAGE_TAG=1.2.0
+IMAGE_TAG=latest
 ```
 
 Start / update:
@@ -81,7 +81,9 @@ docker compose up -d          # launch or restart the server
 docker compose logs -f necesse
 ```
 
-Set `IMAGE_TAG` (env or `.env`) to pin a specific release; leave it blank for `latest`. To build a custom image instead, run `docker compose build necesse` and Compose will reuse it.
+Set `IMAGE_TAG` (env or `.env`) to pin a specific release; use `latest` (or leave it blank) to follow the newest published image. To build a custom image instead, run `docker compose build necesse` and Compose will reuse it.
+
+The project ships with a ready-to-run [`docker-compose.yml`](docker-compose.yml) and [`.env.example`](.env.example) that mirrors the variables listed below—copy them locally and tweak as needed.
 
 ---
 
