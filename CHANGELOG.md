@@ -8,7 +8,8 @@ All notable changes to this project are documented here. The format is based on 
 - Necesse trailer GIF below the badges.
 ### Changed
 - README examples now default to the `latest` image tag and reference the bundled `docker-compose.yml` / `.env.example`.
-## [1.2.0] - 2025-10-22
+
+## [1.2.0] - 2025-10-23
 ### Added
 - Contributor documentation under `docs/` (Git workflow, commit, and release guides plus index).
 
