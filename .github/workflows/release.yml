@@ -23,10 +23,10 @@ jobs:
           tag_name="${GITHUB_REF_NAME}"
           release_name="necesse-docker-server-${tag_name}"
           mkdir "${release_name}"
-          cp Dockerfile docker-compose.yml entrypoint.sh README.md LICENSE .env.example CHANGELOG.md "${release_name}/"
-          cp -r .github "${release_name}/.github"
+          cp docker-compose.yml README.md .env.example "${release_name}/"
           tar -czf "${release_name}.tar.gz" "${release_name}"
           zip -r "${release_name}.zip" "${release_name}"
+          rm -rf "${release_name}"
 
       - name: Generate release notes
         run: |
