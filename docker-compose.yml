@@ -45,17 +45,6 @@ services:
     volumes:
       - ./data:/home/necesse/.config/Necesse
 
-    healthcheck:
-      test: ["CMD-SHELL", "pgrep -f 'Server.jar' >/dev/null"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
-
     # Resource limits (optional, adjust as needed)
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-        reservations:
-          memory: 512M
+    mem_limit: 2g
+    mem_reservation: 512m

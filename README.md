@@ -46,15 +46,31 @@ services:
     restart: unless-stopped
     ports:
       - "14159:14159/udp"
-    env_file: .env
+    environment:
+      - SERVER_PORT=${SERVER_PORT:-14159}
+      - WORLD_NAME=${WORLD_NAME:-MyWorld}
+      - SERVER_PASSWORD=${SERVER_PASSWORD}
+      - SERVER_SLOTS=${SERVER_SLOTS}
+      - SERVER_OWNER=${SERVER_OWNER}
+      - SERVER_MOTD=${SERVER_MOTD}
+      - PAUSE_WHEN_EMPTY=${PAUSE_WHEN_EMPTY}
+      - GIVE_CLIENTS_POWER=${GIVE_CLIENTS_POWER}
+      - ENABLE_LOGGING=${ENABLE_LOGGING}
+      - ZIP_SAVES=${ZIP_SAVES}
+      - SERVER_LANGUAGE=${SERVER_LANGUAGE}
+      - SETTINGS_FILE=${SETTINGS_FILE}
+      - BIND_IP=${BIND_IP}
+      - MAX_CLIENT_LATENCY=${MAX_CLIENT_LATENCY}
+      - LOCAL_DIR=${LOCAL_DIR:-0}
+      - DATA_DIR=${DATA_DIR}
+      - LOGS_DIR=${LOGS_DIR}
+      - UPDATE_ON_START=${UPDATE_ON_START}
+      - AUTO_UPDATE_INTERVAL_MINUTES=${AUTO_UPDATE_INTERVAL_MINUTES:-0}
+      - JAVA_OPTS=${JAVA_OPTS}
+      - PUID=${PUID}
+      - PGID=${PGID}
     volumes:
       - ./data:/home/necesse/.config/Necesse
-    healthcheck:
-      test: ["CMD-SHELL", "pgrep -f 'Server.jar' >/dev/null"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 30s
 ```
 
 `.env` (copy from `.env.example` and adjust):

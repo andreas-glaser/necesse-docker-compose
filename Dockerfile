@@ -21,6 +21,7 @@ RUN dpkg --add-architecture i386 && \
         lib32gcc-s1 \
         curl \
         gosu \
+        procps \
         openjdk-17-jre-headless && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
@@ -69,6 +70,9 @@ ENV CONTAINER_USER=${user} \
 
 # Expose default Necesse port (UDP)
 EXPOSE 14159/udp
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD pgrep -f 'Server.jar' >/dev/null || exit 1
 
 # Set default environment variables
 # hadolint ignore=DL3040
