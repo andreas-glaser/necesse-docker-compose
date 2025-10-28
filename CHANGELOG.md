@@ -4,6 +4,10 @@ All notable changes to this project are documented here. The format is based on 
 
 ## [Unreleased]
 
+## [1.3.2] - 2025-10-28
+### Fixed
+- Container now falls back to the previous server build when SteamCMD fails (e.g. `state is 0x6`) instead of restarting in a loop, and logs where to inspect the failure (`entrypoint.sh`).
+
 ## [1.3.1] - 2025-10-27
 ### Added
 - Image-level healthcheck matching the Compose probe so `docker run` users get liveness status (`Dockerfile`).

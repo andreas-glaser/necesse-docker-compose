@@ -269,8 +269,22 @@ maybe_update_server() {
 
     if [ ! -f "$APP_DIR/Server.jar" ] || [ "$update_flag" = "true" ]; then
         echo "Running SteamCMD to install or update Necesse..."
-        run_as_user "$STEAMCMD_DIR/steamcmd.sh" +runscript "$STEAMCMD_DIR/update_necesse.txt"
-        echo "SteamCMD run complete."
+        if run_as_user "$STEAMCMD_DIR/steamcmd.sh" +runscript "$STEAMCMD_DIR/update_necesse.txt"; then
+            echo "SteamCMD run complete."
+        else
+            result=$?
+            echo "SteamCMD failed with exit code ${result}."
+            if [ -f "$APP_DIR/Server.jar" ]; then
+                echo "Keeping existing server build; new files were not applied."
+                echo "Check /home/${RUN_USER}/Steam/logs/stderr.txt for SteamCMD details."
+                rm -f "${AUTO_UPDATE_FLAG_FILE}"
+                return
+            fi
+
+            echo "No existing server binaries found and SteamCMD failed; aborting start."
+            echo "Check /home/${RUN_USER}/Steam/logs/stderr.txt for SteamCMD details."
+            exit "${result}"
+        fi
     fi
 
     rm -f "${AUTO_UPDATE_FLAG_FILE}"

@@ -128,6 +128,7 @@ docker compose logs -f necesse
 * `UPDATE_ON_START=true` runs SteamCMD at every boot.
 * `AUTO_UPDATE_INTERVAL_MINUTES` runs a background watcher that restarts the container when new builds appear.
 * The watcher touches `/tmp/necesse-auto-update` to trigger an update cycle after the JVM exits.
+* If SteamCMD fails, the existing server build is kept intact; inspect `/home/necesse/Steam/logs/stderr.txt` (or your custom user home) for details.
 
 ---
 
@@ -147,3 +148,4 @@ docker compose logs -f necesse
 | Can't join     | Confirm UDP port forwarding                         |
 | Config ignored | Edit `.env`, then `docker compose up -d`            |
 | Old version    | Set `UPDATE_ON_START=true` or pull the latest image |
+| SteamCMD fail  | Restart after checking `/home/necesse/Steam/logs/stderr.txt` for error details |

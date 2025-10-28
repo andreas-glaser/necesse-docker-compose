@@ -143,6 +143,7 @@ The project ships with a ready-to-run [`docker-compose.yml`](docker-compose.yml)
 ## Updates & Troubleshooting
 
 - **Auto updates:** `UPDATE_ON_START=true` runs SteamCMD each start. Setting `AUTO_UPDATE_INTERVAL_MINUTES` (e.g. `60`) enables continuous polling; the container stops, updates, and restarts itself when Steam publishes a new build.
+- **SteamCMD errors:** the container keeps the previous server build if SteamCMD fails; inspect `/home/necesse/Steam/logs/stderr.txt` (or the custom user home) inside the container for details.
 - **Players cannot join:** confirm UDP port forwarding and public IP. Some port testers give false negatives—validate in-game if unsure.
 - **Config changes ignored:** edit `.env`, then `docker compose up -d` to recreate with new flags.
 - **Version mismatch errors:** ensure both `UPDATE_ON_START` and the interval watcher are enabled, or manually pull the latest image and restart.
